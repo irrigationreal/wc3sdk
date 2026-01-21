@@ -1,0 +1,11 @@
+[package]
+name = "wc3-proxy-mss32"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[build-dependencies]
+

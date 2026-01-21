@@ -1,0 +1,8 @@
+[package]
+name = "wc3"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+wc3-protocol = { path = "../protocol" }
+

@@ -1,0 +1,14 @@
+[package]
+name = "wc3-shim"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wc3-protocol = { path = "../protocol" }
+sdk = { path = "../sdk" }
+anyhow = "1.0"
+serde_json = "1.0"

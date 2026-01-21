@@ -1,0 +1,29 @@
+# Local scratch (never commit game installs, dumps, logs)
+local/
+
+# Optional third-party checkouts (cloned locally)
+resources/vendor/
+
+# Wine prefixes (if placed at repo root by accident)
+.wineprefix/
+wineprefix/
+
+# Reverse-engineering tools
+*.gpr
+*.rep/
+*.lock
+
+# Captures / dumps
+*.dmp
+*.core
+*.pid
+*.log
+
+# Common build artifacts (safe defaults)
+target/
+dist/
+out/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

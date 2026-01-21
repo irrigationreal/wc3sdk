@@ -1,0 +1,8 @@
+[package]
+name = "wc3-injector"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+wc3-protocol = { path = "../protocol" }
+
