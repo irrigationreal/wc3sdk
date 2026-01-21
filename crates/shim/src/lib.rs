@@ -6,6 +6,8 @@ mod win {
 
     #[path = "sdk_bridge.rs"]
     pub mod sdk_bridge;
+    #[path = "main_thread.rs"]
+    pub mod main_thread;
 
     type BOOL = i32;
     type DWORD = u32;

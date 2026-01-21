@@ -29,6 +29,12 @@ Most WC3 engine calls are not thread-safe. The shim should schedule work on
 - **Main-thread pump** runs every tick and executes queued actions.
 - Results are captured into a response buffer and sent back via IPC.
 
+## Shim scaffold
+
+The shim includes a simple queue in `crates/shim/src/main_thread.rs` with:
+- `enqueue(task)` to queue work from background threads
+- `pump(max_tasks)` to execute on the game thread (call from your hook)
+
 ## Fail-closed behavior
 
 If a build mismatch is detected or required symbols are missing:

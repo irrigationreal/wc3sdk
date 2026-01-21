@@ -64,6 +64,21 @@ scripts/find_sdk_roots.py \
   --types "local/pdb-dumps/Warcraft III/types_udt.json"
 ```
 
+Generate Rust bindings (opaque structs + field offsets + symbol RVAs):
+
+```
+scripts/gen_sdk_rust.py \
+  --types "local/pdb-dumps/Warcraft III/types_udt.json" \
+  --symbols "local/pdb-dumps/Warcraft III/symbols.json" \
+  --out-dir "local/sdk-gen"
+```
+
+Then build with:
+
+```
+WC3_SDK_GEN_DIR=local/sdk-gen cargo build -p sdk
+```
+
 ## Using the SnapshotEngine
 
 The snapshot engine reads a root object (symbol + type) and recursively reads fields.
