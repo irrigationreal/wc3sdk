@@ -21,6 +21,7 @@ pub enum Value {
 pub struct CallSpec {
     pub address: u64,
     pub abi: Abi,
+    pub ret: ReturnType,
     pub args: Vec<Value>,
 }
 
@@ -32,6 +33,16 @@ pub enum CallResult {
     F32(f32),
     F64(f64),
     Ptr(u64),
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ReturnType {
+    Void,
+    U32,
+    U64,
+    F32,
+    F64,
+    Ptr,
 }
 
 pub trait CallInvoker {

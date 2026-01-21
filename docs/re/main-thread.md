@@ -34,6 +34,11 @@ Most WC3 engine calls are not thread-safe. The shim should schedule work on
 The shim includes a simple queue in `crates/shim/src/main_thread.rs` with:
 - `enqueue(task)` to queue work from background threads
 - `pump(max_tasks)` to execute on the game thread (call from your hook)
+- `run_on_main(...)` helper to sync a result back to the caller
+
+`crates/shim/src/call_invoker.rs` provides:
+- `DirectCallInvoker` (runs on current thread)
+- `MainThreadCallInvoker` (enqueues + waits for main-thread execution)
 
 ## Fail-closed behavior
 

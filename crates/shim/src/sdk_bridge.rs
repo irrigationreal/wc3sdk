@@ -44,6 +44,13 @@ pub fn ensure_loaded() -> Result<&'static SdkState> {
 }
 
 pub fn snapshot_root_json(root_name: &str) -> Result<String> {
+    snapshot_root_json_with_options(root_name, SnapshotOptions::default())
+}
+
+pub fn snapshot_root_json_with_options(
+    root_name: &str,
+    options: SnapshotOptions,
+) -> Result<String> {
     let state = ensure_loaded()?;
     let root = state
         .config
@@ -61,11 +68,70 @@ pub fn snapshot_root_json(root_name: &str) -> Result<String> {
         symbols: &state.symbols,
         memory: view,
         module_base,
-        options: SnapshotOptions::default(),
+        options,
     };
 
     let snapshot = engine.snapshot_root(root)?;
     Ok(serde_json::to_string_pretty(&snapshot)?)
+}
+
+pub fn snapshot_request(req: &wc3_protocol::SnapshotRequest) -> Result<wc3_protocol::Snapshot> {
+    let options = SnapshotOptions {
+        max_depth: req.max_depth as usize,
+        max_fields: 128,
+        deref_pointers: req.deref_pointers,
+    };
+    let json = snapshot_root_json_with_options(&req.root, options)?;
+    Ok(wc3_protocol::Snapshot {
+        root: req.root.clone(),
+        json,
+    })
+}
+
+pub fn handle_request(req: &wc3_protocol::Request) -> wc3_protocol::Response {
+    match req {
+        wc3_protocol::Request::Ping => wc3_protocol::Response::Pong,
+        wc3_protocol::Request::GetStatus => match ensure_loaded() {
+            Ok(state) => wc3_protocol::Response::Status(wc3_protocol::Status {
+                protocol_version: wc3_protocol::PROTOCOL_VERSION,
+                connected: true,
+                target: parse_target(&state.config),
+            }),
+            Err(_) => wc3_protocol::Response::Status(wc3_protocol::Status {
+                protocol_version: wc3_protocol::PROTOCOL_VERSION,
+                connected: false,
+                target: None,
+            }),
+        },
+        wc3_protocol::Request::GetSnapshot(req) => match snapshot_request(req) {
+            Ok(snapshot) => wc3_protocol::Response::Snapshot(snapshot),
+            Err(err) => wc3_protocol::Response::Error(wc3_protocol::ProtocolError {
+                code: wc3_protocol::ErrorCode::Unknown,
+                message: err.to_string(),
+            }),
+        },
+    }
+}
+
+fn parse_target(config: &SdkConfig) -> Option<wc3_protocol::TargetIdentity> {
+    let sha = parse_sha256(&config.target.exe_sha256)?;
+    Some(wc3_protocol::TargetIdentity {
+        sha256: sha,
+        file_version: None,
+    })
+}
+
+fn parse_sha256(hex: &str) -> Option<[u8; 32]> {
+    let hex = hex.trim();
+    if hex.len() != 64 {
+        return None;
+    }
+    let mut out = [0u8; 32];
+    for i in 0..32 {
+        let byte = u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16).ok()?;
+        out[i] = byte;
+    }
+    Some(out)
 }
 
 unsafe fn get_module_base() -> u64 {

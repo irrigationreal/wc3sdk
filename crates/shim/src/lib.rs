@@ -8,6 +8,8 @@ mod win {
     pub mod sdk_bridge;
     #[path = "main_thread.rs"]
     pub mod main_thread;
+    #[path = "call_invoker.rs"]
+    pub mod call_invoker;
 
     type BOOL = i32;
     type DWORD = u32;
@@ -29,6 +31,7 @@ mod win {
     #[no_mangle]
     pub unsafe extern "system" fn DllMain(_hinst: HINSTANCE, reason: DWORD, _reserved: LPVOID) -> BOOL {
         if reason == DLL_PROCESS_ATTACH {
+            main_thread::mark_main_thread();
             debug(b"wc3-shim: DLL_PROCESS_ATTACH (scaffold)\0");
         }
         TRUE

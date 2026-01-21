@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use crate::call::{Abi, CallInvoker, CallResult, CallSpec, Value};
+use crate::call::{Abi, CallInvoker, CallResult, CallSpec, ReturnType, Value};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -25,11 +25,13 @@ impl SymbolRef {
         invoker: &dyn CallInvoker,
         module_base: u64,
         abi: Abi,
+        ret: ReturnType,
         args: Vec<Value>,
     ) -> Result<CallResult> {
         let spec = CallSpec {
             address: self.resolve_va(module_base),
             abi,
+            ret,
             args,
         };
         invoker.call(&spec)

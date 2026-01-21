@@ -56,6 +56,11 @@ scripts/gen_sdk_config.py \
   --exe "/mnt/storage/Warcraft III-Debug/Warcraft III.exe"
 ```
 
+If the generator finds `CGameWar3::s_pGameWar3`, it will add a default `game`
+root pointing at `CGameWar3`. Note: in some builds this is an Aegis-encrypted
+pointer; if snapshotting fails, you may need to decode it or switch to a
+different root.
+
 Find candidate root symbols/types:
 
 ```
@@ -93,14 +98,17 @@ functions in-process.
 Example (shim-side, pseudocode):
 
 ```
-use sdk::call::{Abi, Value};
+
+Current shim call invoker supports integer/pointer args (up to 4) on x86_64.
+Float args/returns and x86 (32-bit) are not wired yet.
+use sdk::call::{Abi, ReturnType, Value};
 use sdk::generated::symbols;
 
 let symbol = symbols::global::SomeFunction;
 let result = symbol.call(&invoker, module_base, Abi::Thiscall, vec![
-    Value::Ptr(this_ptr),
-    Value::U32(123),
-])?;
+    ReturnType::U64,
+    vec![Value::Ptr(this_ptr), Value::U32(123)],
+)?;
 ```
 
 ## Using the SnapshotEngine

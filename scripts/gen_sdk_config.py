@@ -34,6 +34,8 @@ def main() -> None:
         raise SystemExit(f"missing {types_udt_path}")
 
     pdb_info = json.loads(pdb_info_path.read_text())
+    symbols = json.loads(symbols_path.read_text())
+    types = json.loads(types_udt_path.read_text())
     exe_path = Path(args.exe)
     exe_sha = sha256_file(exe_path)
 
@@ -53,6 +55,23 @@ def main() -> None:
         "pointer_size": pointer_size,
         "roots": [],
     }
+
+    def has_symbol(name: str) -> bool:
+        return any(s.get("name") == name for s in symbols)
+
+    def has_type(name: str) -> bool:
+        return any(t.get("name") == name for t in types)
+
+    # Prefer the global game singleton if present.
+    if has_symbol("CGameWar3::s_pGameWar3") and has_type("CGameWar3"):
+        config["roots"].append(
+            {
+                "name": "game",
+                "symbol": "CGameWar3::s_pGameWar3",
+                "type_name": "CGameWar3",
+                "symbol_is_ptr": True,
+            }
+        )
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
