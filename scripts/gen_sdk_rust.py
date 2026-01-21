@@ -80,7 +80,31 @@ def unique_ident(base: str, counts: dict) -> str:
     return f"{base}__{counts[base]}"
 
 
-def gen_types(types_path: Path) -> str:
+def load_filter(path: Path | None) -> dict:
+    if path is None:
+        default = Path("scripts/sdk_gen_filter.json")
+        if default.exists():
+            return json.loads(default.read_text())
+        return {}
+    return json.loads(path.read_text())
+
+
+def match_any(name: str, patterns: list[str]) -> bool:
+    for pat in patterns:
+        if re.search(pat, name):
+            return True
+    return False
+
+
+def should_include(name: str, include: list[str], exclude: list[str]) -> bool:
+    if include and not match_any(name, include):
+        return False
+    if exclude and match_any(name, exclude):
+        return False
+    return True
+
+
+def gen_types(types_path: Path, filt: dict) -> tuple[str, int]:
     types = json.loads(types_path.read_text())
     out = []
     out.append("// Generated opaque structs + field offsets. Do not edit by hand.\n")
@@ -89,10 +113,20 @@ def gen_types(types_path: Path) -> str:
     out.append("#![allow(dead_code)]\n")
 
     seen = {}
+    type_cfg = filt.get("types", {})
+    include = type_cfg.get("include", [])
+    exclude = type_cfg.get("exclude", [])
+    min_size = int(type_cfg.get("min_size", 0))
+    max_types = int(type_cfg.get("max_types", 0))
+    emitted = 0
     for t in types:
         name = t.get("name", "")
         size = int(t.get("size", 0))
         if not name:
+            continue
+        if size < min_size:
+            continue
+        if not should_include(name, include, exclude):
             continue
         ident = unique_ident(to_ident(name), seen)
         out.append(f"#[repr(C)]\npub struct {ident} {{\n    pub _opaque: [u8; {size}],\n}}\n")
@@ -105,26 +139,42 @@ def gen_types(types_path: Path) -> str:
             fident = to_ident(fname)
             out.append(f"pub const {ident}__{fident}__OFFSET: usize = {offset};\n")
         out.append("\n")
+        emitted += 1
+        if max_types and emitted >= max_types:
+            break
 
-    return "".join(out)
+    return "".join(out), emitted
 
 
-def gen_symbols(symbols_path: Path) -> str:
+def gen_symbols(symbols_path: Path, filt: dict) -> tuple[str, int]:
     symbols = json.loads(symbols_path.read_text())
     out = []
     out.append("// Generated symbols (name + RVA). Do not edit by hand.\n")
     out.append("#![allow(non_upper_case_globals)]\n")
     out.append("#![allow(dead_code)]\n")
     seen = {}
+    sym_cfg = filt.get("symbols", {})
+    include = sym_cfg.get("include", [])
+    exclude = sym_cfg.get("exclude", [])
+    kinds = set(sym_cfg.get("kinds", []))
+    max_symbols = int(sym_cfg.get("max_symbols", 0))
+    emitted = 0
     for s in symbols:
         name = s.get("name", "")
         rva = s.get("rva")
         if not name or rva is None:
             continue
+        if kinds and s.get("kind") not in kinds:
+            continue
+        if not should_include(name, include, exclude):
+            continue
         ident = unique_ident(to_ident(name), seen)
         out.append(f"pub const {ident}__RVA: u32 = {int(rva)};\n")
         out.append(f"pub const {ident}__NAME: &str = \"{name}\";\n")
-    return "".join(out)
+        emitted += 1
+        if max_symbols and emitted >= max_symbols:
+            break
+    return "".join(out), emitted
 
 
 def main() -> None:
@@ -132,13 +182,22 @@ def main() -> None:
     ap.add_argument("--types", required=True, help="types_udt.json")
     ap.add_argument("--symbols", required=True, help="symbols.json")
     ap.add_argument("--out-dir", default="crates/sdk/sdk-gen", help="output dir")
+    ap.add_argument("--filter", default=None, help="filter json path (optional)")
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    types_rs = gen_types(Path(args.types))
-    symbols_rs = gen_symbols(Path(args.symbols))
+    filt = load_filter(Path(args.filter) if args.filter else None)
+    types_rs, type_count = gen_types(Path(args.types), filt)
+    symbols_rs, sym_count = gen_symbols(Path(args.symbols), filt)
+
+    # If filters were too strict, fall back to exclude-only for symbols.
+    if sym_count == 0 and filt.get("symbols", {}).get("include"):
+        fallback = dict(filt)
+        fallback["symbols"] = dict(filt.get("symbols", {}))
+        fallback["symbols"]["include"] = []
+        symbols_rs, sym_count = gen_symbols(Path(args.symbols), fallback)
 
     (out_dir / "types.rs").write_text(types_rs)
     (out_dir / "symbols.rs").write_text(symbols_rs)

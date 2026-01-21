@@ -1,0 +1,91 @@
+{
+  "types": {
+    "include": [
+      "^(C|Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Ability|Order|Widget|Selection|Trigger|Timer|Region)",
+      "::(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Ability|Order|Widget|Selection|Trigger|Timer|Region)"
+    ],
+    "exclude": [
+      "^std::",
+      "^boost::",
+      "^Concurrency::",
+      "^ATL::",
+      "^Gdiplus::",
+      "^D3D",
+      "^ID3D",
+      "^DX",
+      "^vpx_",
+      "^_vpx",
+      "^glm::",
+      "^Eigen::",
+      "^ImGui",
+      "^freetype",
+      "^FT_",
+      "^HarfBuzz",
+      "^hb_",
+      "^pcre",
+      "^zlib",
+      "^ZSTD",
+      "^rapidjson",
+      "^absl::",
+      "^tbb::",
+      "^GTest",
+      "^testing::",
+      "^llvm::",
+      "^clang::",
+      "__std",
+      "__crt",
+      "__gnu",
+      "__int",
+      "__m128",
+      "__m256",
+      "anonymous",
+      "std__",
+      "basic_string",
+      "basic_",
+      "_ITERATOR_",
+      "_Container_",
+      "_Compressed_pair",
+      "_Ref_count",
+      "_Fake_allocator",
+      "_Compressed_pair",
+      "_Vector_iterator",
+      "_List_iterator",
+      "_Tree",
+      "_Node",
+      "_Flist",
+      "_CRT",
+      "_s_",
+      "_t_",
+      "_z_"
+    ],
+    "min_size": 8,
+    "max_types": 2000
+  },
+  "symbols": {
+    "include": [
+      "(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Ability|Order|Widget|Selection|Trigger|Timer|Region)"
+    ],
+    "exclude": [
+      "^std::",
+      "^__",
+      "^_?std__",
+      "^_?crt",
+      "vpx",
+      "D3D",
+      "ID3D",
+      "DXGI",
+      "Gdiplus",
+      "std::",
+      "basic_string",
+      "@std",
+      "typeinfo",
+      "vftable"
+    ],
+    "kinds": [
+      "public",
+      "global",
+      "local"
+    ],
+    "max_symbols": 3000
+  }
+}

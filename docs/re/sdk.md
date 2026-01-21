@@ -88,6 +88,7 @@ WC3_SDK_GEN_DIR=/path/to/sdk-gen cargo build -p sdk
 Notes:
 - Identifiers are normalized to be valid Rust names.
 - Collisions are disambiguated with `__N` suffixes.
+- Filters are defined in `scripts/sdk_gen_filter.json` to keep output small (~1–2MB).
 
 ## Using the SnapshotEngine
 
