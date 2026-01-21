@@ -70,14 +70,24 @@ Generate Rust bindings (opaque structs + field offsets + symbol RVAs):
 scripts/gen_sdk_rust.py \
   --types "local/pdb-dumps/Warcraft III/types_udt.json" \
   --symbols "local/pdb-dumps/Warcraft III/symbols.json" \
-  --out-dir "local/sdk-gen"
+  --out-dir "crates/sdk/sdk-gen"
 ```
 
-Then build with:
+Then build with (default loads `crates/sdk/sdk-gen`):
 
 ```
-WC3_SDK_GEN_DIR=local/sdk-gen cargo build -p sdk
+cargo build -p sdk
 ```
+
+Override the generated directory:
+
+```
+WC3_SDK_GEN_DIR=/path/to/sdk-gen cargo build -p sdk
+```
+
+Notes:
+- Identifiers are normalized to be valid Rust names.
+- Collisions are disambiguated with `__N` suffixes.
 
 ## Using the SnapshotEngine
 
