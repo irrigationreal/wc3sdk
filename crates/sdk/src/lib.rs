@@ -11,9 +11,7 @@ pub mod layout;
 pub mod memory;
 pub mod snapshot;
 pub mod symbols;
-pub mod generated {
-    include!(concat!(env!("OUT_DIR"), "/generated.rs"));
-}
+pub mod generated;
 
 pub use call::*;
 pub use accessor::*;

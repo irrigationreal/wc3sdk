@@ -64,31 +64,44 @@ scripts/find_sdk_roots.py \
   --types "local/pdb-dumps/Warcraft III/types_udt.json"
 ```
 
-Generate Rust bindings (opaque structs + field offsets + symbol RVAs):
+Generate Rust bindings (opaque structs + field offsets + symbol references):
 
 ```
 scripts/gen_sdk_rust.py \
   --types "local/pdb-dumps/Warcraft III/types_udt.json" \
   --symbols "local/pdb-dumps/Warcraft III/symbols.json" \
-  --out-dir "crates/sdk/sdk-gen"
+  --out-dir "crates/sdk/src/generated"
 ```
 
-Then build with (default loads `crates/sdk/sdk-gen`):
+Then build with (default loads `crates/sdk/src/generated`):
 
 ```
 cargo build -p sdk
-```
-
-Override the generated directory:
-
-```
-WC3_SDK_GEN_DIR=/path/to/sdk-gen cargo build -p sdk
 ```
 
 Notes:
 - Identifiers are normalized to be valid Rust names.
 - Collisions are disambiguated with `__N` suffixes.
 - Filters are defined in `scripts/sdk_gen_filter.json` to keep output small (~1–2MB).
+
+## Calling functions (symbol refs)
+
+Generated symbol constants are `SymbolRef` values (name + RVA). You can resolve
+them against the module base and use a `CallInvoker` implementation to call
+functions in-process.
+
+Example (shim-side, pseudocode):
+
+```
+use sdk::call::{Abi, Value};
+use sdk::generated::symbols;
+
+let symbol = symbols::global::SomeFunction;
+let result = symbol.call(&invoker, module_base, Abi::Thiscall, vec![
+    Value::Ptr(this_ptr),
+    Value::U32(123),
+])?;
+```
 
 ## Using the SnapshotEngine
 

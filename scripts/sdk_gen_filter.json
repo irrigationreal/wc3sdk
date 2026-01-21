@@ -1,10 +1,11 @@
 {
   "types": {
     "include": [
-      "^(C|Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Ability|Order|Widget|Selection|Trigger|Timer|Region)",
-      "::(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Ability|Order|Widget|Selection|Trigger|Timer|Region)"
+      "^(C(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Order|Widget|Selection|Trigger|Timer|Region)|Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Order|Widget|Selection|Trigger|Timer|Region)",
+      "::(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Order|Widget|Selection|Trigger|Timer|Region)"
     ],
     "exclude": [
+      "^CAbility[A-Za-z0-9_]",
       "^std::",
       "^boost::",
       "^Concurrency::",
@@ -59,13 +60,14 @@
       "_z_"
     ],
     "min_size": 8,
-    "max_types": 2000
+    "max_types": 1200
   },
   "symbols": {
     "include": [
-      "(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Ability|Order|Widget|Selection|Trigger|Timer|Region)"
+      "(Game|Unit|Player|World|Map|Camera|UI|Jass|Lua|Order|Widget|Selection|Trigger|Timer|Region)"
     ],
     "exclude": [
+      "^CAbility[A-Za-z0-9_]",
       "^std::",
       "^__",
       "^_?std__",
@@ -86,6 +88,6 @@
       "global",
       "local"
     ],
-    "max_symbols": 3000
+    "max_symbols": 1200
   }
 }

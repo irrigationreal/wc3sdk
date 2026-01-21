@@ -1,8 +1,40 @@
 use anyhow::{Context, Result};
+use crate::call::{Abi, CallInvoker, CallResult, CallSpec, Value};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+
+#[derive(Clone, Copy, Debug)]
+pub struct SymbolRef {
+    pub name: &'static str,
+    pub rva: u32,
+}
+
+impl SymbolRef {
+    pub const fn new(name: &'static str, rva: u32) -> Self {
+        Self { name, rva }
+    }
+
+    pub fn resolve_va(self, module_base: u64) -> u64 {
+        module_base.wrapping_add(self.rva as u64)
+    }
+
+    pub fn call(
+        self,
+        invoker: &dyn CallInvoker,
+        module_base: u64,
+        abi: Abi,
+        args: Vec<Value>,
+    ) -> Result<CallResult> {
+        let spec = CallSpec {
+            address: self.resolve_va(module_base),
+            abi,
+            args,
+        };
+        invoker.call(&spec)
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SymbolRecord {
